@@ -6,7 +6,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="octoliner",
-    version="1.0.0",
+    version="1.0.1",
     description="Raspberry Pi library for working with Amperka Octoliner "
                 "line sensor board",
     long_description=README,
@@ -21,5 +21,6 @@ setup(
     ],
     packages=["octoliner"],
     include_package_data=True,
+    install_requires=["wiringpi"],
     entry_points={"console_scripts": ["octoliner=octoliner.example:main"]},
 )
