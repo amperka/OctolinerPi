@@ -1,5 +1,5 @@
-from gpioexp import gpioexp
-from gpioexp import GPIO_EXPANDER_DEFAULT_I2C_ADDRESS as DFLT_ADDR
+from .gpioexp import gpioexp
+from .gpioexp import GPIO_EXPANDER_DEFAULT_I2C_ADDRESS as DFLT_ADDR
 
 
 class Octoliner(gpioexp):
