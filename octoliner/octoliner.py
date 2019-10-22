@@ -29,6 +29,9 @@ class Octoliner(gpioexp):
         is 0.0. If the current sensor reading does not allow
         understanding of the line position the NaN value is returned.
 
+    digital_read_all() -> int
+        Read all 8 channels and interpret them as a binary pattern.
+
     """
 
     def __init__(self, i2c_address=DFLT_ADDR):
@@ -149,3 +152,13 @@ class Octoliner(gpioexp):
         # If pattern key exists in patterns_dict return it,
         # else return NaN.
         return patterns_dict.get(binary_line, float("nan"))
+
+    def digital_read_all(self):
+        """
+        Read all 8 channels and interpret them as a binary pattern.
+        One bit for one channel. 1 is for dark and 0 is for light.
+        Return 8-bit binary pattern.
+        """
+        analog_values = []
+        self.analog_read_all(analog_values)
+        return self.map_analog_to_pattern(analog_values)
