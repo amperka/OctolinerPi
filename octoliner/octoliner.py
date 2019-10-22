@@ -19,9 +19,8 @@ class Octoliner(gpioexp):
     analog_read_all(analog_values: list) -> None
         Read all 8 channels to the analog_values list.
 
-    map_line(binary_line: list) -> float
-        Convert data from sensors to the relative position of the line.
-        The return value in the range from -1.0 to 1.0.
+    map_analog_to_pattern(analog_values: list) -> int
+        Make a 8-bit pattern from the analog_values list.
 
     """
 
@@ -78,33 +77,29 @@ class Octoliner(gpioexp):
         for i in range(8):
             analog_values.append(self.analog_read(i))
 
-    def map_line(self, binary_line):
+    def map_analog_to_pattern(self, analog_values):
         """
-        Convert data from sensors to the relative position of the line.
-        The return value in the range from -1.0 to 1.0:
-            – "-1.0" corresponds to the leftmost position of the sensor.
-            – "1.0" corresponds to the rightmost position of the sensor.
-            – "0.0" – the sensor is in the middle of the line.
+        Make a 8-bit pattern from the analog_values list.
+        One bit for one channel. "1" is for dark and "0" is for light.
 
         Parameters:
         -----------
-        binary_line: list
+        analog_values: list
             List of data values from line sensors.
         """
         pattern = 0
-        # Search min and max values in binary_line list.
+        # Search min and max values in analog_values list.
         min_val = float("inf")
         max_val = 0
-        for val in binary_line:
+        for val in analog_values:
             if val < min_val:
                 min_val = val
             if val > max_val:
                 max_val = val
         threshold = min_val + (max_val - min_val) / 2
-        for val in binary_line:
+        for val in analog_values:
             pattern = (pattern << 1) + (0 if val < threshold else 1)
-        self._value = self._check_pattern(pattern)
-        return self._value
+        return pattern
 
     def _check_pattern(self, pattern):
         """
