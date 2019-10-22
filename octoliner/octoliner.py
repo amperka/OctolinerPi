@@ -16,6 +16,9 @@ class Octoliner(gpioexp):
         Read the value from one line sensor.
         Return value in range from 0 to 1.0.
 
+    analog_read_all(analog_values: list) -> None
+        Read all 8 channels to the analog_values list.
+
     map_line(binary_line: list) -> float
         Convert data from sensors to the relative position of the line.
         The return value in the range from -1.0 to 1.0.
@@ -62,6 +65,18 @@ class Octoliner(gpioexp):
         """
         sensor &= 0x07
         return self.analogRead(self._sensor_pin_map[sensor])
+
+    def analog_read_all(self, analog_values):
+        """
+        Read all 8 channels to the analog_values list.
+
+        Parameters:
+        -----------
+        analog_values: list
+            A list to which line sensors data is recorded.
+        """
+        for i in range(8):
+            analog_values.append(self.analog_read(i))
 
     def map_line(self, binary_line):
         """
