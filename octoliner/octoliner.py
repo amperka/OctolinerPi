@@ -22,6 +22,13 @@ class Octoliner(gpioexp):
     map_analog_to_pattern(analog_values: list) -> int
         Make a 8-bit pattern from the analog_values list.
 
+    map_pattern_to_line(binary_line: int) -> float
+        Interpret channel pattern as a line position in the range from
+        -1.0 (on the left extreme) to +1.0 (on the right extreme).
+        When the line is under the sensor center, the return value
+        is 0.0. If the current sensor reading does not allow
+        understanding of the line position the NaN value is returned.
+
     """
 
     def __init__(self, i2c_address=DFLT_ADDR):
@@ -101,13 +108,17 @@ class Octoliner(gpioexp):
             pattern = (pattern << 1) + (0 if val < threshold else 1)
         return pattern
 
-    def _check_pattern(self, pattern):
+    def map_pattern_to_line(self, binary_line):
         """
-        Return pattern from line sensors patterns dictionary.
+        Interpret channel pattern as a line position in the range from
+        -1.0 (on the left extreme) to +1.0 (on the right extreme).
+        When the line is under the sensor center, the return value
+        is 0.0. If the current sensor reading does not allow
+        understanding of the line position the NaN value is returned.
 
         Parameters:
         -----------
-        pattern: int
+        binary_line: int
             Combination of data from line sensors.
         """
         patterns_dict = {
@@ -136,5 +147,5 @@ class Octoliner(gpioexp):
             0b00000001: -1.0,
         }
         # If pattern key exists in patterns_dict return it,
-        # else return current self._value.
-        return patterns_dict.get(pattern, self._value)
+        # else return NaN.
+        return patterns_dict.get(binary_line, float("nan"))
