@@ -6,8 +6,6 @@ import time
 octo = Octoliner()
 # Set the sensitivity of the photodetectors.
 octo.set_sensitivity(1.0)
-# Set the brightness of the IR LEDs.
-octo.set_brightness(1.0)
 
 
 def main():

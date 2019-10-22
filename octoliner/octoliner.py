@@ -12,10 +12,6 @@ class Octoliner(gpioexp):
         Set the sensitivity of the photodetectors in the range
         from 0 to 1.0.
 
-    set_brightness(brightness: float) -> None
-        Set the brightness of the IR LEDs in the range
-        from 0 to 1.0.
-
     analog_read(sensor: float) -> float
         Read the value from one line sensor.
         Return value in range from 0 to 1.0.
@@ -36,7 +32,7 @@ class Octoliner(gpioexp):
             Board address on I2C bus (default is 42).
         """
         super().__init__(i2c_address)
-        self._led_brightness_pin = 9
+        self._ir_leds_pin = 9
         self._sense_pin = 0
         self._sensor_pin_map = (4, 5, 6, 8, 7, 3, 2, 1)
         self._value = 0
@@ -53,19 +49,6 @@ class Octoliner(gpioexp):
             from 0 to 1.0.
         """
         self.analogWrite(self._sense_pin, sense)
-
-    def set_brightness(self, brightness):
-        """
-        Set the brightness of the IR LEDs in the range
-        from 0 to 1.0.
-
-        Parameters
-        ----------
-        brightness: float
-            Brightness of the IR LEDs in the range
-            from 0 to 1.0.
-        """
-        self.analogWrite(self._led_brightness_pin, brightness)
 
     def analog_read(self, sensor):
         """
