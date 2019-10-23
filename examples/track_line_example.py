@@ -3,7 +3,7 @@ import time
 
 
 # Create an object for working with 8-channel line sensor.
-octo = Octoliner()
+octo = Octoliner(42)
 # Set the sensitivity of the photodetectors.
 octo.set_sensitivity(1.0)
 
@@ -11,14 +11,8 @@ octo.set_sensitivity(1.0)
 def main():
     try:
         while True:
-            # List for storing data values from line sensors.
-            data_from_sensors = []
-            # Read the values from the line sensors and
-            # add them to data_from_sensors list.
-            for i in range(8):
-                data_from_sensors.append(octo.analog_read(i))
             # Print the current line position in the console.
-            print(octo.map_line(data_from_sensors))
+            print(octo.track_line())
             # Wait 0.5 seconds.
             time.sleep(0.5)
     except KeyboardInterrupt:
