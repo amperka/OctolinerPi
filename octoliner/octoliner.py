@@ -40,6 +40,12 @@ class Octoliner(gpioexp):
         right extreme). When the line is under the sensor center,
         the return value is 0.0.
 
+    change_address(new_addres: int) -> None
+        Changes the I²C address of the module.
+
+    save_address() -> None
+        Permanently saves the current board I²C address.
+
     """
 
     def __init__(self, i2c_address=DFLT_ADDR):
@@ -199,3 +205,22 @@ class Octoliner(gpioexp):
             result = self._previous_value if math.isnan(result) else result
             self._previous_value = result
             return result
+
+    def change_address(self, new_address):
+        """
+        Changes the I²C address of the module. The change is in effect
+        only while the board is powered on. If you want to save it
+        permanently call the save_address method.
+
+        Parameters:
+        -----------
+        new_address: int
+            New I2C address.
+        """
+        super().changeAddr(new_address)
+
+    def save_address(self):
+        """
+        Permanently saves the current board I²C address.
+        """
+        super().saveAddr()
