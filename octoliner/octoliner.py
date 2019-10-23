@@ -11,28 +11,28 @@ class Octoliner(gpioexp):
     Methods:
     --------
     set_sensitivity(sense: float) -> None
-        Set the sensitivity of the photodetectors in the range
+        Sets the sensitivity of the photodetectors in the range
         from 0 to 1.0.
 
     analog_read(sensor: float) -> float
-        Read the value from one line sensor.
+        Reads the value from one line sensor.
         Return value in range from 0 to 1.0.
 
     analog_read_all(analog_values: list) -> None
-        Read all 8 channels to the analog_values list.
+        Reads all 8 channels to the analog_values list.
 
     map_analog_to_pattern(analog_values: list) -> int
-        Make a 8-bit pattern from the analog_values list.
+        Creates a 8-bit pattern from the analog_values list.
 
     map_pattern_to_line(binary_line: int) -> float
-        Interpret channel pattern as a line position in the range from
+        Interprets channel pattern as a line position in the range from
         -1.0 (on the left extreme) to +1.0 (on the right extreme).
         When the line is under the sensor center, the return value
         is 0.0. If the current sensor reading does not allow
         understanding of the line position the NaN value is returned.
 
     digital_read_all() -> int
-        Read all 8 channels and interpret them as a binary pattern.
+        Reads all 8 channels and interpret them as a binary pattern.
 
     track_line(values: None, list or int) -> float
         Estimates line position under the sensor and returns the value
@@ -71,7 +71,7 @@ class Octoliner(gpioexp):
 
     def set_sensitivity(self, sense):
         """
-        Set the sensitivity of the photodetectors in the range
+        Sets the sensitivity of the photodetectors in the range
         from 0 to 1.0.
 
         Parameters:
@@ -84,7 +84,7 @@ class Octoliner(gpioexp):
 
     def analog_read(self, sensor):
         """
-        Read the value from one line sensor.
+        Reads the value from one line sensor.
         Return value in range from 0 to 1.0.
 
         Parameters:
@@ -97,7 +97,7 @@ class Octoliner(gpioexp):
 
     def analog_read_all(self, analog_values):
         """
-        Read all 8 channels to the analog_values list.
+        Reads all 8 channels to the analog_values list.
 
         Parameters:
         -----------
@@ -109,7 +109,7 @@ class Octoliner(gpioexp):
 
     def map_analog_to_pattern(self, analog_values):
         """
-        Make a 8-bit pattern from the analog_values list.
+        Creates a 8-bit pattern from the analog_values list.
         One bit for one channel. "1" is for dark and "0" is for light.
 
         Parameters:
@@ -133,7 +133,7 @@ class Octoliner(gpioexp):
 
     def map_pattern_to_line(self, binary_line):
         """
-        Interpret channel pattern as a line position in the range from
+        Interprets channel pattern as a line position in the range from
         -1.0 (on the left extreme) to +1.0 (on the right extreme).
         When the line is under the sensor center, the return value
         is 0.0. If the current sensor reading does not allow
@@ -175,9 +175,9 @@ class Octoliner(gpioexp):
 
     def digital_read_all(self):
         """
-        Read all 8 channels and interpret them as a binary pattern.
+        Reads all 8 channels and interpret them as a binary pattern.
         One bit for one channel. 1 is for dark and 0 is for light.
-        Return 8-bit binary pattern.
+        Returns 8-bit binary pattern.
         """
         analog_values = []
         self.analog_read_all(analog_values)
