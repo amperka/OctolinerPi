@@ -1,3 +1,5 @@
+import math
+
 from .gpioexp import gpioexp
 from .gpioexp import GPIO_EXPANDER_DEFAULT_I2C_ADDRESS as DFLT_ADDR
 
@@ -32,6 +34,12 @@ class Octoliner(gpioexp):
     digital_read_all() -> int
         Read all 8 channels and interpret them as a binary pattern.
 
+    track_line(values: None, list or int) -> float
+        Estimates line position under the sensor and returns the value
+        in the range from -1.0 (on the left extreme) to +1.0 (on the
+        right extreme). When the line is under the sensor center,
+        the return value is 0.0.
+
     """
 
     def __init__(self, i2c_address=DFLT_ADDR):
@@ -47,7 +55,7 @@ class Octoliner(gpioexp):
         self._ir_leds_pin = 9
         self._sense_pin = 0
         self._sensor_pin_map = (4, 5, 6, 8, 7, 3, 2, 1)
-        self._value = 0
+        self._previous_value = 0
 
     def set_sensitivity(self, sense):
         """
@@ -162,3 +170,32 @@ class Octoliner(gpioexp):
         analog_values = []
         self.analog_read_all(analog_values)
         return self.map_analog_to_pattern(analog_values)
+
+    def track_line(self, values=None):
+        """
+        Estimates line position under the sensor and returns the value
+        in the range from -1.0 (on the left extreme) to +1.0 (on the
+        right extreme). When the line is under the sensor center,
+        the return value is 0.0.
+
+        Parameters:
+        -----------
+        values: None, list or int
+            If the argument is None, method reads all channels.
+            If the argument is a list of data from line sensors, the
+            method converts this list into a pattern and tracks the
+            line position using it.
+            If the argument is an 8-bit pattern (int), the method
+            evaluates the position of the line under the sensor
+            based on this pattern.
+
+        """
+        if values is None:
+            return self.track_line(self.digital_read_all())
+        elif isinstance(values, list):
+            return self.track_line(self.map_analog_to_pattern(values))
+        elif isinstance(values, int):
+            result = self.map_pattern_to_line(values)
+            result = self._previous_value if math.isnan(result) else result
+            self._previous_value = result
+            return result
