@@ -1,7 +1,7 @@
 import math
 
 from .gpioexp import gpioexp
-from .gpioexp import GPIO_EXPANDER_DEFAULT_I2C_ADDRESS as DFLT_ADDR
+from .gpioexp import GPIO_EXPANDER_DEFAULT_I2C_ADDRESS as DFLT_ADDR, OUTPUT
 
 
 class Octoliner(gpioexp):
@@ -58,7 +58,13 @@ class Octoliner(gpioexp):
             Board address on I2C bus (default is 42).
         """
         super().__init__(i2c_address)
+
         self._ir_leds_pin = 9
+        self.pinMode(self._ir_leds_pin, OUTPUT)
+        self.digitalWrite(self._ir_leds_pin, 1)
+
+        self.pwmFreq(8000)
+
         self._sense_pin = 0
         self._sensor_pin_map = (4, 5, 6, 8, 7, 3, 2, 1)
         self._previous_value = 0
