@@ -17,9 +17,9 @@ Sets the sensitivity of the photodetectors in the range from `0` to `1.0`.
 
 Reads the value from one line sensor. Return value in range from `0` to `1.0`.
 
-### `analog_read_all(analog_values: list) -> None`
+### `analog_read_all() -> list(float)`
 
-Reads all 8 channels to the `analog_values` list.
+Creates a list and reads data from all 8 channels into it.
 
 ### `map_analog_to_pattern(analog_values: list) -> int`
 

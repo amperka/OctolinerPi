@@ -18,8 +18,8 @@ class Octoliner(gpioexp):
         Reads the value from one line sensor.
         Return value in range from 0 to 1.0.
 
-    analog_read_all(analog_values: list) -> None
-        Reads all 8 channels to the analog_values list.
+    analog_read_all() -> list(float)
+        Creates a list and reads data from all 8 channels into it.
 
     map_analog_to_pattern(analog_values: list) -> int
         Creates a 8-bit pattern from the analog_values list.
@@ -95,17 +95,15 @@ class Octoliner(gpioexp):
         sensor &= 0x07
         return self.analogRead(self._sensor_pin_map[sensor])
 
-    def analog_read_all(self, analog_values):
+    def analog_read_all(self):
         """
-        Reads all 8 channels to the analog_values list.
+        Creates a list and reads data from all 8 channels into it.
 
-        Parameters:
-        -----------
-        analog_values: list
-            A list to which line sensors data is recorded.
         """
+        analog_values = []
         for i in range(8):
             analog_values.append(self.analog_read(i))
+        return analog_values
 
     def map_analog_to_pattern(self, analog_values):
         """
@@ -179,8 +177,7 @@ class Octoliner(gpioexp):
         One bit for one channel. 1 is for dark and 0 is for light.
         Returns 8-bit binary pattern.
         """
-        analog_values = []
-        self.analog_read_all(analog_values)
+        analog_values = self.analog_read_all()
         return self.map_analog_to_pattern(analog_values)
 
     def track_line(self, values=None):

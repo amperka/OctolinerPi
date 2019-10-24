@@ -12,11 +12,7 @@ def main():
     try:
         while True:
             # List for storing data values from line sensors.
-            data_from_sensors = []
-            # Read the values from the line sensors and
-            # add them to data_from_sensors list.
-            for i in range(8):
-                data_from_sensors.append(octo.analog_read(i))
+            data_from_sensors = octo.analog_read_all()
             # Print the current line position in the console.
             print(octo.track_line(data_from_sensors))
             # Wait 0.5 seconds.
