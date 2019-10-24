@@ -8,7 +8,7 @@ setup(
     name="octoliner",
     version="1.0.1",
     description="Raspberry Pi library for working with Amperka Octoliner "
-                "line sensor board",
+    "line sensor board",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/amperka/OctolinerPi/",

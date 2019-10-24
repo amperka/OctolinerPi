@@ -1,5 +1,7 @@
+import math
+
 from .gpioexp import gpioexp
-from .gpioexp import GPIO_EXPANDER_DEFAULT_I2C_ADDRESS as DFLT_ADDR
+from .gpioexp import GPIO_EXPANDER_DEFAULT_I2C_ADDRESS as DFLT_ADDR, OUTPUT
 
 
 class Octoliner(gpioexp):
@@ -9,20 +11,40 @@ class Octoliner(gpioexp):
     Methods:
     --------
     set_sensitivity(sense: float) -> None
-        Set the sensitivity of the photodetectors in the range
-        from 0 to 1.0.
-
-    set_brightness(brightness: float) -> None
-        Set the brightness of the IR LEDs in the range
+        Sets the sensitivity of the photodetectors in the range
         from 0 to 1.0.
 
     analog_read(sensor: float) -> float
-        Read the value from one line sensor.
+        Reads the value from one line sensor.
         Return value in range from 0 to 1.0.
 
-    map_line(binary_line: list) -> float
-        Convert data from sensors to the relative position of the line.
-        The return value in the range from -1.0 to 1.0.
+    analog_read_all() -> list(float)
+        Creates a list and reads data from all 8 channels into it.
+
+    map_analog_to_pattern(analog_values: list) -> int
+        Creates a 8-bit pattern from the analog_values list.
+
+    map_pattern_to_line(binary_line: int) -> float
+        Interprets channel pattern as a line position in the range from
+        -1.0 (on the left extreme) to +1.0 (on the right extreme).
+        When the line is under the sensor center, the return value
+        is 0.0. If the current sensor reading does not allow
+        understanding of the line position the NaN value is returned.
+
+    digital_read_all() -> int
+        Reads all 8 channels and interpret them as a binary pattern.
+
+    track_line(values: None, list or int) -> float
+        Estimates line position under the sensor and returns the value
+        in the range from -1.0 (on the left extreme) to +1.0 (on the
+        right extreme). When the line is under the sensor center,
+        the return value is 0.0.
+
+    change_address(new_addres: int) -> None
+        Changes the I²C address of the module.
+
+    save_address() -> None
+        Permanently saves the current board I²C address.
 
     """
 
@@ -36,14 +58,20 @@ class Octoliner(gpioexp):
             Board address on I2C bus (default is 42).
         """
         super().__init__(i2c_address)
-        self._led_brightness_pin = 9
+
+        self._ir_leds_pin = 9
+        self.pinMode(self._ir_leds_pin, OUTPUT)
+        self.digitalWrite(self._ir_leds_pin, 1)
+
+        self.pwmFreq(8000)
+
         self._sense_pin = 0
         self._sensor_pin_map = (4, 5, 6, 8, 7, 3, 2, 1)
-        self._value = 0
+        self._previous_value = 0
 
     def set_sensitivity(self, sense):
         """
-        Set the sensitivity of the photodetectors in the range
+        Sets the sensitivity of the photodetectors in the range
         from 0 to 1.0.
 
         Parameters:
@@ -54,22 +82,9 @@ class Octoliner(gpioexp):
         """
         self.analogWrite(self._sense_pin, sense)
 
-    def set_brightness(self, brightness):
-        """
-        Set the brightness of the IR LEDs in the range
-        from 0 to 1.0.
-
-        Parameters
-        ----------
-        brightness: float
-            Brightness of the IR LEDs in the range
-            from 0 to 1.0.
-        """
-        self.analogWrite(self._led_brightness_pin, brightness)
-
     def analog_read(self, sensor):
         """
-        Read the value from one line sensor.
+        Reads the value from one line sensor.
         Return value in range from 0 to 1.0.
 
         Parameters:
@@ -80,41 +95,51 @@ class Octoliner(gpioexp):
         sensor &= 0x07
         return self.analogRead(self._sensor_pin_map[sensor])
 
-    def map_line(self, binary_line):
+    def analog_read_all(self):
         """
-        Convert data from sensors to the relative position of the line.
-        The return value in the range from -1.0 to 1.0:
-            – "-1.0" corresponds to the leftmost position of the sensor.
-            – "1.0" corresponds to the rightmost position of the sensor.
-            – "0.0" – the sensor is in the middle of the line.
+        Creates a list and reads data from all 8 channels into it.
+
+        """
+        analog_values = []
+        for i in range(8):
+            analog_values.append(self.analog_read(i))
+        return analog_values
+
+    def map_analog_to_pattern(self, analog_values):
+        """
+        Creates a 8-bit pattern from the analog_values list.
+        One bit for one channel. "1" is for dark and "0" is for light.
 
         Parameters:
         -----------
-        binary_line: list
+        analog_values: list
             List of data values from line sensors.
         """
         pattern = 0
-        # Search min and max values in binary_line list.
+        # Search min and max values in analog_values list.
         min_val = float("inf")
         max_val = 0
-        for val in binary_line:
+        for val in analog_values:
             if val < min_val:
                 min_val = val
             if val > max_val:
                 max_val = val
         threshold = min_val + (max_val - min_val) / 2
-        for val in binary_line:
+        for val in analog_values:
             pattern = (pattern << 1) + (0 if val < threshold else 1)
-        self._value = self._check_pattern(pattern)
-        return self._value
+        return pattern
 
-    def _check_pattern(self, pattern):
+    def map_pattern_to_line(self, binary_line):
         """
-        Return pattern from line sensors patterns dictionary.
+        Interprets channel pattern as a line position in the range from
+        -1.0 (on the left extreme) to +1.0 (on the right extreme).
+        When the line is under the sensor center, the return value
+        is 0.0. If the current sensor reading does not allow
+        understanding of the line position the NaN value is returned.
 
         Parameters:
         -----------
-        pattern: int
+        binary_line: int
             Combination of data from line sensors.
         """
         patterns_dict = {
@@ -143,5 +168,62 @@ class Octoliner(gpioexp):
             0b00000001: -1.0,
         }
         # If pattern key exists in patterns_dict return it,
-        # else return current self._value.
-        return patterns_dict.get(pattern, self._value)
+        # else return NaN.
+        return patterns_dict.get(binary_line, float("nan"))
+
+    def digital_read_all(self):
+        """
+        Reads all 8 channels and interpret them as a binary pattern.
+        One bit for one channel. 1 is for dark and 0 is for light.
+        Returns 8-bit binary pattern.
+        """
+        analog_values = self.analog_read_all()
+        return self.map_analog_to_pattern(analog_values)
+
+    def track_line(self, values=None):
+        """
+        Estimates line position under the sensor and returns the value
+        in the range from -1.0 (on the left extreme) to +1.0 (on the
+        right extreme). When the line is under the sensor center,
+        the return value is 0.0.
+
+        Parameters:
+        -----------
+        values: None, list or int
+            If the argument is None, method reads all channels.
+            If the argument is a list of data from line sensors, the
+            method converts this list into a pattern and tracks the
+            line position using it.
+            If the argument is an 8-bit pattern (int), the method
+            evaluates the position of the line under the sensor
+            based on this pattern.
+
+        """
+        if values is None:
+            return self.track_line(self.digital_read_all())
+        elif isinstance(values, list):
+            return self.track_line(self.map_analog_to_pattern(values))
+        elif isinstance(values, int):
+            result = self.map_pattern_to_line(values)
+            result = self._previous_value if math.isnan(result) else result
+            self._previous_value = result
+            return result
+
+    def change_address(self, new_address):
+        """
+        Changes the I²C address of the module. The change is in effect
+        only while the board is powered on. If you want to save it
+        permanently call the save_address method.
+
+        Parameters:
+        -----------
+        new_address: int
+            New I2C address.
+        """
+        self.changeAddr(new_address)
+
+    def save_address(self):
+        """
+        Permanently saves the current board I²C address.
+        """
+        self.saveAddr()
