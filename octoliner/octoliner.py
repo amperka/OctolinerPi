@@ -223,10 +223,10 @@ class Octoliner(gpioexp):
         new_address: int
             New I2C address.
         """
-        super().changeAddr(new_address)
+        self.changeAddr(new_address)
 
     def save_address(self):
         """
         Permanently saves the current board I²C address.
         """
-        super().saveAddr()
+        self.saveAddr()
