@@ -1,3 +1,8 @@
+# A command line utility that allows you to change the I2C address of the
+# Octoliner board.
+#
+# You can use it as follows:
+# $ python3 change_i2c_addr.py <old_i2c_address> <new_i2c_address>
 import argparse
 
 import octoliner
