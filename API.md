@@ -44,6 +44,7 @@ channel. `1` is for dark and `0` is for light. Returns 8-bit binary pattern.
 Estimates line position under the sensor and returns the value in the range
 from `-1.0` (on the left extreme) to `+1.0` (on the right extreme). When the
 line is under the sensor center, the return value is `0.0`.
+
 If the argument `values` is `None`, method reads all channels.
 
 If the argument `values` is a list of data from line sensors, the method
