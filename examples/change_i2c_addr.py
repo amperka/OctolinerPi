@@ -11,19 +11,20 @@ import octoliner
 def main():
     # Create command line arguments parser.
     parser = argparse.ArgumentParser(
-        description="The program changes the I2C address of the Octoliner.")
+        description="The program changes the I2C address of the Octoliner."
+    )
     # Add two positional arguments to parser.
     parser.add_argument(
         "old_addr",
         type=int,
         help="Old I2C address of the Octoliner.",
-        action="store"
+        action="store",
     )
     parser.add_argument(
         "new_addr",
         type=int,
         help="New I2C address of the Octoliner.",
-        action="store"
+        action="store",
     )
     # Parse arguments.
     args = parser.parse_args()
