@@ -7,7 +7,7 @@ A library for Raspberry Pi to interface with the Amperka [Octoliner](https://my.
 Open the terminal on your Raspberry Pi and use `pip` to install the library:
 
 ```shell
-pip install octoliner
+pip3 install octoliner
 ```
 
 If you haven’t enabled I²C support in your Raspbian Linux yet, run the configuration tool to turn it on:
@@ -19,7 +19,7 @@ sudo raspi-config
 Then: Interfacing Options → I2C → Yes (enable) → Yes (autoload) → \<Finish\> → Yes (reboot). The setting preserves across reboots.
 
 ```console
-$ octoliner
+$ python3 -m octoliner
 0
 0.5
 0.675
@@ -37,6 +37,7 @@ import time
 
 # Import the class required
 # from the library octoliner
+from octoliner import Octoliner
 
 # Sensor on the standard bus and address
 octoliner = Octoliner()
