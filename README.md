@@ -18,6 +18,8 @@ sudo raspi-config
 
 Then: Interfacing Options → I2C → Yes (enable) → Yes (autoload) → \<Finish\> → Yes (reboot). The setting preserves across reboots.
 
+## Testing connection
+
 ```console
 $ python3 -m octoliner
 0
