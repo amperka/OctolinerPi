@@ -9,16 +9,12 @@ def main():
     try:
         while True:
             print(
-                'Please enter the command "calc" to calculate the sensitivity',
-                'or Ctrl^C to exit.'
+                "Press Enter to calculate the sensitivity or Ctrl^C to exit."
             )
-            command = input()
-            if command == "calc":
-                # Optimal sensitivity calculation.
-                octo.optimize_sensitivity_on_black()
-                print("Optimal sensitivity: %.2f\n" % octo.get_sensitivity())
-            else:
-                print("Command is invalid")
+            input()
+            # Optimal sensitivity calculation.
+            octo.optimize_sensitivity_on_black()
+            print("Optimal sensitivity: %.2f\n" % octo.get_sensitivity())
     except KeyboardInterrupt:
         pass
 
