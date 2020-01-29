@@ -3,13 +3,12 @@ import time
 from octoliner import Octoliner
 
 
-# Create an object for working with 8-channel line sensor.
-octo = Octoliner(42)
-# Set the sensitivity of the photodetectors.
-octo.set_sensitivity(1.0)
-
-
 def main():
+    # Create an object for working with 8-channel line sensor.
+    octo = Octoliner(42)
+    # Set the sensitivity of the photodetectors.
+    octo.set_sensitivity(1.0)
+
     try:
         while True:
             # Print the current line position in the console.
