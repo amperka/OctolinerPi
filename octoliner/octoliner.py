@@ -170,7 +170,7 @@ class Octoliner(gpioexp):
             sens += 0.004
 
         # Environment has changed since the start of the process.
-        if sens == 1.0:
+        if sens >= 1.0:
             self.set_sensitivity(sensitivity_backup)
             return False
 
