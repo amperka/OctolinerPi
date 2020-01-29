@@ -1,6 +1,6 @@
 import time
 
-from octoliner import Octoliner
+from .octoliner import Octoliner
 
 
 def main():
@@ -11,10 +11,8 @@ def main():
 
     try:
         while True:
-            # List for storing data values from line sensors.
-            data_from_sensors = octo.analog_read_all()
             # Print the current line position in the console.
-            print(octo.track_line(data_from_sensors))
+            print(octo.track_line())
             # Wait 0.5 seconds.
             time.sleep(0.5)
     except KeyboardInterrupt:

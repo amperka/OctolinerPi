@@ -1,11 +1,10 @@
 from octoliner import Octoliner
 
 
-# Create an object for working with 8-channel line sensor.
-octo = Octoliner()
-
-
 def main():
+    # Create an object for working with 8-channel line sensor.
+    octo = Octoliner()
+
     try:
         while True:
             print(
