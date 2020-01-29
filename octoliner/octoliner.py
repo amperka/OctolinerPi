@@ -1,7 +1,12 @@
 import math
+import time
 
 from .gpioexp import gpioexp
 from .gpioexp import GPIO_EXPANDER_DEFAULT_I2C_ADDRESS as DFLT_ADDR, OUTPUT
+
+
+MIN_SENSITIVITY = 0.47
+BLACK_THRESHOLD = 0.39
 
 
 class Octoliner(gpioexp):
@@ -13,6 +18,22 @@ class Octoliner(gpioexp):
     set_sensitivity(sense: float) -> None
         Sets the sensitivity of the photodetectors in the range
         from 0 to 1.0.
+
+    get_sensitivity() -> float
+        Returns the current sensitivity level previously set with
+        set_sensitivity or optimize_sensitivity_on_blacki methods.
+        Return value in range from 0 to 1.0.
+
+    optimize_sensitivity_on_black() -> bool
+        Performs automatic sensitivity set up. Before the optimization,
+        place Octoliner over the track in a way where all its sensors
+        point to the black line/field.
+        The method returns true if succeed. If the calibration fails
+        it returns false, for example, if the sensors are placed over
+        a contrast black/white or a completely white surface. In the
+        case of failure, the previous sensitivity level is left intact.
+        The measurement time depends on the blackness level. The typical
+        value is less than 1 sec, the maximum is 3 sec.
 
     analog_read(sensor: float) -> float
         Reads the value from one line sensor.
@@ -68,6 +89,7 @@ class Octoliner(gpioexp):
         self._sense_pin = 0
         self._sensor_pin_map = (4, 5, 6, 8, 7, 3, 2, 1)
         self._previous_value = 0
+        self._sensitivity = 0.8
 
     def set_sensitivity(self, sense):
         """
@@ -80,7 +102,82 @@ class Octoliner(gpioexp):
             Sensitivity of the photodetectors in the range
             from 0 to 1.0.
         """
-        self.analogWrite(self._sense_pin, sense)
+        self._sensitivity = sense
+        self.analogWrite(self._sense_pin, self._sensitivity)
+
+    def get_sensitivity(self):
+        """
+        Returns the current sensitivity level previously set with
+        set_sensitivity or optimize_sensitivity_on_blacki methods.
+        Return value in range from 0 to 1.0.
+        """
+        return self._sensitivity
+
+    def _count_of_black(self):
+        """
+        Returns the number of sensors whose values exceed
+        the BLACK_THRESHOLD.
+        """
+        count = 0
+        for i in range(8):
+            if self.analog_read(i) > BLACK_THRESHOLD:
+                count += 1
+        return count
+
+    def optimize_sensitivity_on_black(self):
+        """
+        Performs automatic sensitivity set up. Before the optimization,
+        place Octoliner over the track in a way where all its sensors
+        point to the black line/field.
+        The method returns true if succeed. If the calibration fails
+        it returns false, for example, if the sensors are placed over
+        a contrast black/white or a completely white surface.  In the
+        case of failure, the previous sensitivity level is left intact.
+        The measurement time depends on the blackness level. The typical
+        value is less than 1 sec, the maximum is 3 sec.
+        """
+        # Save backup sensitivity value.
+        sensitivity_backup = self.get_sensitivity()
+
+        self.set_sensitivity(1.0)
+        time.sleep(0.2)
+
+        # Starting at the highest possible sensitivity read all channels
+        # at each iteration to find the level when all the channels
+        # become black.
+        sens = 1.0
+        while sens > MIN_SENSITIVITY:
+            self.set_sensitivity(sens)
+            time.sleep(0.1)
+            if self._count_of_black() == 8:
+                break
+            # Choose step size as 1.0 / 50.
+            sens -= 0.02
+
+        # Something is broken
+        if sens <= MIN_SENSITIVITY:
+            self.set_sensitivity(sensitivity_backup)
+            return False
+
+        # Forward fine search to find the level when at least one sensor
+        # value will become back white.
+        while sens < 1.0:
+            self.set_sensitivity(sens)
+            time.sleep(0.05)
+            if self._count_of_black() != 8:
+                break
+            # Choose a more accurate step value as 1.0 / 250.
+            sens += 0.004
+
+        # Environment has changed since the start of the process.
+        if sens >= 1.0:
+            self.set_sensitivity(sensitivity_backup)
+            return False
+
+        # Step back to fall back to all-eight-black.
+        sens -= 0.02
+        self.set_sensitivity(sens)
+        return True
 
     def analog_read(self, sensor):
         """
