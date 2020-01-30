@@ -6,7 +6,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="octoliner",
-    version="1.1.0",
+    version="2.1.0",
     description="Raspberry Pi library for working with Amperka Octoliner "
     "line sensor board",
     long_description=README,
